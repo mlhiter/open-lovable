@@ -101,8 +101,8 @@ export const FragmentCard = ({ fragment, isActiveFragment, onFragmentClick }: Fr
   return (
     <button
       className={cn(
-        'flex items-start gap-2 rounded-lg border bg-muted p-3 text-start transition-colors hover:bg-secondary',
-        isActiveFragment && 'border-primary bg-secondary text-primary-foreground hover:bg-primary'
+        'flex cursor-pointer items-start gap-2 rounded-lg border bg-muted p-3 text-start transition-colors hover:bg-secondary',
+        isActiveFragment && 'border-primary bg-primary text-primary-foreground hover:bg-primary'
       )}
       onClick={() => onFragmentClick(fragment)}>
       <Code2Icon className="mt-0.5 size-4" />
