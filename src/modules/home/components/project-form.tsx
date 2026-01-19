@@ -14,6 +14,7 @@ import { Button } from '@/components/ui/button'
 import { ArrowUpIcon, Loader2 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { PROJECT_TEMPLATES } from '@/app/(home)/constants'
+import { useClerk } from '@clerk/nextjs'
 
 const formSchema = z.object({
   value: z.string().min(1, { message: 'Value is required' }).max(10000, { message: 'Value is too long' }),
@@ -22,6 +23,7 @@ const formSchema = z.object({
 export const ProjectForm = () => {
   const trpc = useTRPC()
   const router = useRouter()
+  const clerk = useClerk()
   const queryClient = useQueryClient()
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -32,8 +34,12 @@ export const ProjectForm = () => {
   const createProject = useMutation(
     trpc.projects.create.mutationOptions({
       onError: (error) => {
-        //TODO: Redirect to pricing page if specific error
         toast.error(error.message)
+
+        if (error.data?.code === 'UNAUTHORIZED') {
+          clerk.redirectToSignIn()
+        }
+        //TODO: Redirect to pricing page if specific error
       },
       onSuccess: (data) => {
         queryClient.invalidateQueries(trpc.projects.getMany.queryOptions())

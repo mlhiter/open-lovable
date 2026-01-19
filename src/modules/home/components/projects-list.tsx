@@ -2,18 +2,22 @@
 
 import { Button } from '@/components/ui/button'
 import { useTRPC } from '@/trpc/client'
-import { useSuspenseQuery } from '@tanstack/react-query'
+import { useQuery } from '@tanstack/react-query'
 import Link from 'next/link'
 import Image from 'next/image'
 import { formatDistanceToNow } from 'date-fns'
+import { useUser } from '@clerk/nextjs'
 
 export const ProjectsList = () => {
   const trpc = useTRPC()
-  const { data: projects } = useSuspenseQuery(trpc.projects.getMany.queryOptions())
+  const { user } = useUser()
+  const { data: projects } = useQuery(trpc.projects.getMany.queryOptions())
+
+  if (!user) return null
 
   return (
     <div className="flex w-full flex-col gap-y-6 rounded-xl border bg-white p-8 sm:gap-y-4 dark:bg-sidebar">
-      <h2 className="text-2xl font-semibold">Saved Projects</h2>
+      <h2 className="text-2xl font-semibold">{user?.firstName}&apos;s Saved Projects</h2>
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-3">
         {projects?.length === 0 && (
           <div className="col-span-full text-center">
