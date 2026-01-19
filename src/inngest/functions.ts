@@ -18,6 +18,7 @@ export const codeAgentFunction = inngest.createFunction(
   async ({ event, step }) => {
     const sandboxId = await step.run('get-sandbox-id', async () => {
       const sandbox = await Sandbox.create('vibe-nextjs-mlhier')
+      await sandbox.setTimeout(60_000 * 10 * 2)
       return sandbox.sandboxId
     })
 
