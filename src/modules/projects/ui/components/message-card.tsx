@@ -108,7 +108,7 @@ export const FragmentCard = ({ fragment, isActiveFragment, onFragmentClick }: Fr
       <Code2Icon className="mt-0.5 size-4" />
       <div className="flex flex-1 flex-col">
         <span className="line-clamp-1 text-sm font-medium">{fragment.title}</span>
-        <span className="text-xs text-muted-foreground">Preview</span>
+        <span className="text-xs">Preview</span>
       </div>
       <div className="mt-0.5 flex items-center justify-center">
         <ChevronRightIcon className="size-4" />
