@@ -16,17 +16,30 @@ import {
   DropdownMenuRadioItem,
 } from '@/components/ui/dropdown-menu'
 import { Button } from '@/components/ui/button'
-import { ChevronDownIcon, ChevronLeftIcon, MenuIcon, SunMoonIcon } from 'lucide-react'
+import { ChevronDownIcon, ChevronLeftIcon, SunMoonIcon } from 'lucide-react'
 import { useTheme } from 'next-themes'
 
 interface Props {
   projectId: string
 }
 
+const isLikelySlug = (value: string) => /^[a-z0-9]+(?:-[a-z0-9]+)+$/.test(value)
+
 export const ProjectHeader = ({ projectId }: Props) => {
   const trpc = useTRPC()
   const { theme, setTheme } = useTheme()
-  const { data: project } = useSuspenseQuery(trpc.projects.getOne.queryOptions({ id: projectId }))
+  const { data: project } = useSuspenseQuery(
+    trpc.projects.getOne.queryOptions(
+      { id: projectId },
+      {
+        refetchInterval: (query) => {
+          const name = query.state.data?.name
+          if (!name) return 5000
+          return isLikelySlug(name) ? 5000 : false
+        },
+      }
+    )
+  )
 
   return (
     <header className="flex items-center justify-between border-b p-2">

@@ -136,3 +136,14 @@ The title should be:
 
 Only return the raw title.
 `
+
+export const PROJECT_NAME_PROMPT = `
+You generate concise project names based on the user's first message.
+
+Rules:
+- Keep it short and descriptive (2-6 words).
+- Use the same language as the message.
+- Use title case for Latin alphabet languages.
+- No quotes, emojis, or extra text.
+- Output only the name.
+`

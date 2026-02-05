@@ -73,13 +73,22 @@ export const projectsRouter = createTRPCRouter({
         },
       })
 
-      await inngest.send({
-        name: 'code-agent/run',
-        data: {
-          value: input.value,
-          projectId: createdProject.id,
-        },
-      })
+      await Promise.all([
+        inngest.send({
+          name: 'code-agent/run',
+          data: {
+            value: input.value,
+            projectId: createdProject.id,
+          },
+        }),
+        inngest.send({
+          name: 'project-name/run',
+          data: {
+            value: input.value,
+            projectId: createdProject.id,
+          },
+        }),
+      ])
 
       return createdProject
     }),

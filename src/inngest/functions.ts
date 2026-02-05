@@ -3,7 +3,7 @@ import { createAgent, anthropic, createTool, createNetwork, Tool, Message, creat
 import { Sandbox } from 'e2b'
 import { getSandbox, lastAssistantTextMessageContent } from './utils'
 import z from 'zod'
-import { FRAGMENT_TITLE_PROMPT, PROMPT, RESPONSE_PROMPT } from '@/prompt'
+import { FRAGMENT_TITLE_PROMPT, PROMPT, PROJECT_NAME_PROMPT, RESPONSE_PROMPT } from '@/prompt'
 import prisma from '@/lib/db'
 import { parseAgentOutput } from '@/lib/utils'
 
@@ -251,5 +251,61 @@ export const codeAgentFunction = inngest.createFunction(
     })
 
     return { url: sandboxUrl, title: 'Fragment', files: result.state.data.files, summary: result.state.data.summary }
+  }
+)
+
+export const projectNameFunction = inngest.createFunction(
+  { id: 'project-name' },
+  { event: 'project-name/run' },
+  async ({ event, step }) => {
+    const project = await step.run('get-project', async () => {
+      return await prisma.project.findUnique({
+        where: {
+          id: event.data.projectId,
+        },
+      })
+    })
+
+    if (!project) {
+      return { status: 'missing' }
+    }
+
+    const projectNameGenerator = createAgent<AgentState>({
+      name: 'project-name-generator',
+      description: 'Generates concise project names',
+      system: PROJECT_NAME_PROMPT,
+      model: anthropic({
+        model: 'claude-haiku-4-5-20251001',
+        baseUrl: process.env.ANTHROPIC_API_BASE_URL,
+        defaultParameters: {
+          temperature: 0.2,
+          max_tokens: 200,
+        },
+      }),
+    })
+
+    const { output } = await projectNameGenerator.run(event.data.value)
+    const rawName = parseAgentOutput(output)
+
+    if (!rawName) {
+      return { status: 'invalid' }
+    }
+
+    if (rawName === project.name) {
+      return { status: 'unchanged' }
+    }
+
+    await step.run('update-project-name', async () => {
+      return await prisma.project.update({
+        where: {
+          id: project.id,
+        },
+        data: {
+          name: rawName,
+        },
+      })
+    })
+
+    return { status: 'updated', name: rawName }
   }
 )
